@@ -17,7 +17,7 @@ const PASSING_SCORE = 80 // Hardcoded Passing score for the submission
  * Process creation / update of Review
  * @param {Object} message the message
  */
-function * processReview (message) {
+async function processReview (message) {
   let submissionId
   let aggregateScore = 0
 
@@ -25,20 +25,20 @@ function * processReview (message) {
     submissionId = message.payload.submissionId
   } else {
     // Retrieve the review and fetch submissionId from review
-    const review = yield helper.reqToSubmissionAPI('GET',
+    const review = await helper.reqToSubmissionAPI('GET',
       `${config.SUBMISSION_API_URL}/reviews/${message.payload.id}`)
     submissionId = review.submissionId
   }
   // Get all reviews based on submissionId from Submission API
-  const reviews = yield helper.reqToSubmissionAPI('GET',
+  const reviews = await helper.reqToSubmissionAPI('GET',
     `${config.SUBMISSION_API_URL}/reviews?submissionId=${submissionId}`)
 
   if (reviews.length === 0) {
-    logger.debug('No reviews exist for aggregating')
+    logger.info('No reviews exist for aggregating')
     return // Reviews not present in ES yet, stop processing
   }
 
-  const reviewTypes = yield helper.getReviewTypes()
+  const reviewTypes = await helper.getReviewTypes()
 
   // Find the number of valid reviews
   const validReviews = _.filter(reviews, (review) => {
@@ -66,16 +66,15 @@ function * processReview (message) {
 
     const isPassing = aggregateScore >= PASSING_SCORE
 
-    const scoreCardId = yield helper.getScoreCardId(submissionId, validReviews)
-
-    yield helper.processReviewSummation({
+    const scoreCardId = await helper.getScoreCardId(submissionId, validReviews)
+    await helper.processReviewSummation({
       scoreCardId: scoreCardId,
       submissionId: submissionId,
       aggregateScore: aggregateScore,
       isPassing: isPassing
     })
   } else {
-    logger.debug('No valid reviews exist for aggregating')
+    logger.info('No valid reviews exist for aggregating')
   }
 }
 
@@ -96,14 +95,14 @@ processReview.schema = {
  * Process Appeals Response Phase closure.
  * @param {Object} message the message
  */
-function * processEvent (message) {
+async function processEvent (message) {
   // Get all submissions for a given challengeId
-  const submissions = yield helper.reqToSubmissionAPI('GET',
+  const submissions = await helper.reqToSubmissionAPI('GET',
     `${config.SUBMISSION_API_URL}/submissions?challengeId=${message.payload.projectId}`)
   // If there are submissions in the challenge, continue processing
   if (submissions.length !== 0) {
     // Get reviewTypes from Submission API
-    const reviewTypes = yield helper.getReviewTypes()
+    const reviewTypes = await helper.getReviewTypes()
     const promises = [] // Array of promises
 
     for (const i in submissions) {
@@ -136,10 +135,10 @@ function * processEvent (message) {
 
           const isPassing = aggregateScore >= PASSING_SCORE
 
-          const scoreCardId = yield helper.getScoreCardId(submission.id, validReviews)
+          const scoreCardId = await helper.getScoreCardId(submission.id, validReviews)
 
           promises.push(
-            yield helper.processReviewSummation({
+            helper.processReviewSummation({
               scoreCardId: scoreCardId,
               submissionId: submission.id,
               aggregateScore: aggregateScore,
@@ -147,13 +146,17 @@ function * processEvent (message) {
               isFinal: true
             })
           )
+        } else {
+          logger.info(`No valid reviews exist for ${submission.id}`)
         }
+      } else {
+        logger.info(`No reviews exist for ${submission.id}`)
       }
     }
     // Wait until all review summation is processed
-    yield promises
+    await Promise.all(promises)
   } else {
-    logger.debug('No submissions present to aggregate review scores')
+    logger.info('No submissions present to aggregate review scores')
   }
 }
 

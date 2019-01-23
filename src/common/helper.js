@@ -17,8 +17,8 @@ const scoreCardIds = {}
 /* Function to get M2M token
  * @returns {Promise}
  */
-function * getM2Mtoken () {
-  return yield m2m.getMachineToken(config.AUTH0_CLIENT_ID, config.AUTH0_CLIENT_SECRET)
+const getM2Mtoken = async () => {
+  return m2m.getMachineToken(config.AUTH0_CLIENT_ID, config.AUTH0_CLIENT_SECRET)
 }
 
 /**
@@ -28,35 +28,33 @@ function * getM2Mtoken () {
  * @param{Object} reqBody Body of the request
  * @returns {Promise}
  */
-function * reqToSubmissionAPI (reqType, path, reqBody) {
+const reqToSubmissionAPI = async (reqType, path, reqBody) => {
   // Token necessary to send request to Submission API
-  const token = yield getM2Mtoken()
-  Promise.promisifyAll(request)
-
+  const token = await getM2Mtoken()
   if (reqType === 'POST') {
     // Post the request body to Submission API
-    yield request
+    await request
       .post(path)
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'application/json')
       .send(reqBody)
   } else if (reqType === 'PUT') {
     // Put the request body to Submission API
-    yield request
+    await request
       .put(path)
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'application/json')
       .send(reqBody)
   } else if (reqType === 'PATCH') {
     // Patch the request body to Submission API
-    yield request
+    await request
       .post(path)
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'application/json')
       .send(reqBody)
   } else if (reqType === 'GET') {
     // GET the requested URL from Submission API
-    const response = yield request
+    const response = await request
       .get(path)
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'application/json')
@@ -72,11 +70,11 @@ function * reqToSubmissionAPI (reqType, path, reqBody) {
  * Function to get reviewTypes from Submission API
  * @returns {Object} Review types pushed into a Dictionary
  */
-function * getReviewTypes () {
+const getReviewTypes = async () => {
   if (Object.keys(reviewTypes).length !== 0) {
     return reviewTypes
   } else {
-    const response = yield reqToSubmissionAPI('GET',
+    const response = await reqToSubmissionAPI('GET',
       `${config.SUBMISSION_API_URL}/reviewTypes`, {})
     _.each(response, (value) => {
       reviewTypes[value.id] = value.name
@@ -91,12 +89,11 @@ function * getReviewTypes () {
  * @param reviews Valid reviews of the given submissionId
  * @returns {String} ScorecardId of the challenge
  */
-function * getScoreCardId (submissionId, reviews) {
-  Promise.promisifyAll(request)
+const getScoreCardId = async (submissionId, reviews) => {
   let scoreCardId
   let response
   // Retrieve submission from Submission API
-  const submission = yield reqToSubmissionAPI('GET',
+  const submission = await reqToSubmissionAPI('GET',
     `${config.SUBMISSION_API_URL}/submissions/${submissionId}`)
   // Fetch the challenge information from Challenge API
   if (submission.challengeId) {
@@ -105,7 +102,7 @@ function * getScoreCardId (submissionId, reviews) {
       return scoreCardIds[submission.challengeId]
     }
     try {
-      response = yield request.get(`${config.CHALLENGE_API_URL}/${submission.challengeId}`)
+      response = await request.get(`${config.CHALLENGE_API_URL}/${submission.challengeId}`)
     } catch (ex) {
       logger.error(`Error while accessing ${config.CHALLENGE_API_URL}/${submission.challengeId}`)
     }
@@ -127,16 +124,18 @@ function * getScoreCardId (submissionId, reviews) {
  * @param reviewSummation Current reviewSummation object
  * @returns {Promise}
  */
-function * processReviewSummation (reviewSummation) {
+const processReviewSummation = async (reviewSummation) => {
   // Retrieve existing review summation from Submission API if any
-  const extReviewSummation = yield reqToSubmissionAPI('GET',
+  const extReviewSummation = await reqToSubmissionAPI('GET',
     `${config.SUBMISSION_API_URL}/reviewSummations?submissionId=${reviewSummation.submissionId}`)
   // If Review summation exist already, Update it else create new reviewSummation
   if (extReviewSummation.length !== 0) {
-    yield reqToSubmissionAPI('PUT',
+    logger.info('Updating existing Review Summation')
+    return reqToSubmissionAPI('PUT',
       `${config.SUBMISSION_API_URL}/reviewSummations/${extReviewSummation[0].id}`, reviewSummation)
   } else {
-    yield reqToSubmissionAPI('POST',
+    logger.info('Creating new Review Summation')
+    return reqToSubmissionAPI('POST',
       `${config.SUBMISSION_API_URL}/reviewSummations`, reviewSummation)
   }
 }
