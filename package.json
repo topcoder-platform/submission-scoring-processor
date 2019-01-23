@@ -6,22 +6,32 @@
   "scripts": {
     "start": "node src/app.js",
     "lint": "standard",
-    "lint:fix": "standard --fix"
+    "lint:fix": "standard --fix",
+    "test": "mocha test/unit/*.test.js --require test/common/prepare.js --exit",
+    "e2e": "mocha test/e2e/*.test.js --require test/common/prepare.js --timeout 20000 --exit",
+    "cov": "nyc --reporter=html --reporter=text npm test",
+    "cov-e2e": "nyc --reporter=html --reporter=text npm run e2e"
   },
   "devDependencies": {
-    "standard": "^11.0.1"
+    "mocha": "^5.2.0",
+    "mocha-prepare": "^0.1.0",
+    "nock": "^10.0.6",
+    "nyc": "^13.1.0",
+    "should": "^13.2.3",
+    "sinon": "^7.2.3",
+    "standard": "^12.0.1"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
-    "co": "^4.6.0",
-    "config": "^1.21.0",
+    "config": "^3.0.1",
+    "dotenv": "^6.2.0",
     "get-parameter-names": "^0.3.0",
     "joi": "^9.0.4",
     "lodash": "^4.17.10",
     "no-kafka": "^3.2.4",
     "tc-core-library-js": "appirio-tech/tc-core-library-js.git#feature/m2mtoken",
     "topcoder-healthcheck-dropin": "^1.0.2",
-    "winston": "^2.2.0"
+    "winston": "^3.1.0"
   },
   "engines": {
     "node": "8.x"

@@ -1,54 +1,64 @@
 /**
  * This module contains the winston logger configuration.
  */
-'use strict'
 
 const _ = require('lodash')
 const Joi = require('joi')
-const winston = require('winston')
 const util = require('util')
 const config = require('config')
 const getParams = require('get-parameter-names')
+const { createLogger, format, transports } = require('winston')
 
-const transports = []
-if (!config.DISABLE_LOGGING) {
-  transports.push(new (winston.transports.Console)({ level: config.LOG_LEVEL }))
-}
-const logger = new (winston.Logger)({ transports })
+const logger = createLogger({
+  level: config.LOG_LEVEL,
+  transports: [
+    new transports.Console({
+      format: format.combine(
+        format.colorize(),
+        format.simple()
+      )
+    })
+  ]
+})
 
 /**
  * Log error details with signature
  * @param err the error
  * @param signature the signature
  */
-logger.logFullError = function (err, signature) { // eslint-disable-line
+logger.logFullError = (err, signature) => {
   if (!err) {
     return
   }
+
   if (signature) {
-    logger.error(signature)
+    logger.error(`Error happened in ${signature}`)
   }
-  const args = Array.prototype.slice.call(arguments)
-  args.shift()
-  logger.error.apply(logger, args)
-  logger.error(util.inspect(err))
+
+  // If error is not logged, log it
   if (!err.logged) {
     logger.error(err.stack)
+    err.logged = true
   }
-  err.logged = true
 }
 
 /**
- * Sanitize object.
+ * Remove invalid properties from the object and hide long arrays
  * @param {Object} obj the object
  * @returns {Object} the new object with removed properties
  * @private
  */
-function _sanitizeObject (obj) {
+const _sanitizeObject = (obj) => {
   try {
     return JSON.parse(JSON.stringify(obj, (name, value) => {
+      // Array of field names that should not be logged
+      // add field if necessary (password, tokens etc)
+      const removeFields = []
+      if (_.contains(removeFields, name)) {
+        return '<removed>'
+      }
       if (_.isArray(value) && value.length > 30) {
-        return 'Array(' + value.length + ')'
+        return `Array(${value.length})`
       }
       return value
     }))
@@ -63,7 +73,7 @@ function _sanitizeObject (obj) {
  * @param {Array} arr the array with values
  * @private
  */
-function _combineObject (params, arr) {
+const _combineObject = (params, arr) => {
   const ret = {}
   _.each(arr, (arg, i) => {
     ret[params[i]] = arg
@@ -75,21 +85,20 @@ function _combineObject (params, arr) {
  * Decorate all functions of a service and log debug information if DEBUG is enabled
  * @param {Object} service the service
  */
-logger.decorateWithLogging = function (service) {
+logger.decorateWithLogging = (service) => {
   if (config.LOG_LEVEL !== 'debug') {
     return
   }
   _.each(service, (method, name) => {
     const params = method.params || getParams(method)
-    service[name] = function * () {
-      logger.debug('ENTER ' + name)
+    service[name] = async function () {
+      logger.debug(`ENTER ${name}`)
       logger.debug('input arguments')
       const args = Array.prototype.slice.call(arguments)
       logger.debug(util.inspect(_sanitizeObject(_combineObject(params, args))))
       try {
-        const result = yield * method.apply(this, arguments)
-        logger.debug('EXIT ' + name)
-        logger.debug('output arguments')
+        const result = await method.apply(this, arguments)
+        logger.debug(`EXIT ${name}`)
         if (result !== null && result !== undefined) {
           logger.debug('output arguments')
           logger.debug(util.inspect(_sanitizeObject(result)))
@@ -115,10 +124,11 @@ logger.decorateWithValidators = function (service) {
       return
     }
     const params = getParams(method)
-    service[name] = function * () {
+    service[name] = async function () {
       const args = Array.prototype.slice.call(arguments)
       const value = _combineObject(params, args)
       const normalized = Joi.attempt(value, method.schema)
+
       const newArgs = []
       // Joi will normalize values
       // for example string number '1' to 1
@@ -126,7 +136,7 @@ logger.decorateWithValidators = function (service) {
       _.each(params, (param) => {
         newArgs.push(normalized[param])
       })
-      return yield method.apply(this, newArgs)
+      return method.apply(this, newArgs)
     }
     service[name].params = params
   })
@@ -136,7 +146,7 @@ logger.decorateWithValidators = function (service) {
  * Apply logger and validation decorators
  * @param {Object} service the service to wrap
  */
-logger.buildService = function (service) {
+logger.buildService = (service) => {
   logger.decorateWithValidators(service)
   logger.decorateWithLogging(service)
 }
