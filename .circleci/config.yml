@@ -74,7 +74,7 @@ jobs:
             source awsenvconf            
             ./buildenv.sh -e DEV -b submission-scoring-processor_deployvar
             source buildenvvar
-            ./master_deploy.sh -d ECS -e DEV -t $CIRCLE_SHA1 -s submission-scoring-processor_appvar
+            ./master_deploy.sh -d ECS -e DEV -t latest -s submission-scoring-processor_appvar -i submission-scoring-processor
 workflows:
   version: 2
   build:
@@ -87,5 +87,6 @@ workflows:
               only: [ "develop", "dev-circleci" ]
       - "build-prod":
           filters:
+          context : org-global
             branches:
-              only: master1
+              only: master
