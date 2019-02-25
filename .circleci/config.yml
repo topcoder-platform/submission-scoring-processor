@@ -80,6 +80,7 @@ workflows:
     jobs:
       # Development builds are executed on "develop" branch only.
       - "build-dev":
+          context : org-global
           filters:
             branches:
               only: [ "develop", "dev-circleci" ]
