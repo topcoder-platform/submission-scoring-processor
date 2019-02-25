@@ -84,7 +84,7 @@ workflows:
             branches:
               only: [ "develop", "dev-circleci" ]
       - "build-prod":
-          filters:
           context : org-global
+          filters:
             branches:
               only: master
