@@ -20,10 +20,10 @@ jobs:
             sudo chmod +x /usr/local/bin/ecs-cli
       - run:
           name: Executing build.
-        #  command: |
-        #    chmod +x build.sh
+          command: |
+             chmod +x build.sh
         #    ./build.sh DEV
-             pwd
+           
       - deploy:
           name: Running Masterscript.
           command: |
