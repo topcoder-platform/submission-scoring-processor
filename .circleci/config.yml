@@ -20,9 +20,9 @@ jobs:
             sudo chmod +x /usr/local/bin/ecs-cli
       - run:
           name: Executing build.
-          command: |
-            chmod +x build.sh
-            ./build.sh DEV
+        #  command: |
+        #    chmod +x build.sh
+        #    ./build.sh DEV
       - deploy:
           name: Running Masterscript.
           command: |
@@ -31,7 +31,9 @@ jobs:
             cp ./../buildscript/buildenv.sh .
             cp ./../buildscript/awsconfiguration.sh .
             ./awsconfiguration.sh DEV
-            source awsenvconf            
+            source awsenvconf      
+            chmod +x build.sh
+            ./build.sh DEV
             ./buildenv.sh -e DEV -b submission-scoring-processor_deployvar
             source buildenvvar
             ./master_deploy.sh -d ECS -e DEV -t $CIRCLE_SHA1 -s submission-scoring-processor_appvar
