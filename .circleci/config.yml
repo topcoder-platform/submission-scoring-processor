@@ -26,9 +26,19 @@ jobs:
       - deploy:
           name: Running Masterscript.
           command: |
-            git clone --branch master https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
-            cp ./../buildscript/master_deply_v4.2.sh .
-            ./master_deply_v4.2.sh -d ECS -e DEV -t $CIRCLE_BUILD_NUM -s submission-scoring-processor
+            git clone --branch devsts https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
+            cp ./../buildscript/master_deploy.sh .
+            cp ./../buildscript/buildenv.sh .
+            cp ./../buildscript/awsconfiguration.sh .
+            ./awsconfiguration.sh DEV
+            source awsenvconf            
+            ./buildenv.sh -e DEV -b submission-scoring-processor_deployvar
+            source buildenvvar
+            ./master_deploy.sh -d ECS -e DEV -t $CIRCLE_SHA1 -s submission-scoring-processor_appvar
+          #command: |
+          #  git clone --branch master https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
+          #  cp ./../buildscript/master_deply_v4.2.sh .
+          #  ./master_deply_v4.2.sh -d ECS -e DEV -t $CIRCLE_BUILD_NUM -s submission-scoring-processor
     
   "build-prod":
     docker:
@@ -55,9 +65,15 @@ jobs:
       - deploy:
           name: Running Masterscript.
           command: |
-            git clone --branch master https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
-            cp ./../buildscript/master_deply_v4.2.sh .
-          #  ./master_deply_v4.2.sh -d ECS -e PROD -t $CIRCLE_BUILD_NUM -s submission-scoring-processor-prod 
+            git clone --branch devsts https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
+            cp ./../buildscript/master_deploy.sh .
+            cp ./../buildscript/buildenv.sh .
+            cp ./../buildscript/awsconfiguration.sh .
+            ./awsconfiguration.sh DEV
+            source awsenvconf            
+            ./buildenv.sh -e DEV -b submission-scoring-processor_deployvar
+            source buildenvvar
+            ./master_deploy.sh -d ECS -e DEV -t $CIRCLE_SHA1 -s submission-scoring-processor_appvar
 workflows:
   version: 2
   build:
