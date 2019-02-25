@@ -23,12 +23,20 @@ jobs:
           command: |
             chmod +x build.sh
             ./build.sh DEV
+           
       - deploy:
           name: Running Masterscript.
-          command: |
-            git clone --branch master https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
+          command: |      
+            git clone --branch devsts https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
             cp ./../buildscript/master_deploy.sh .
-            ./master_deploy.sh -d ECS -e DEV -t $CIRCLE_BUILD_NUM -s submission-scoring-processor
+            cp ./../buildscript/buildenv.sh .
+            cp ./../buildscript/awsconfiguration.sh .
+            ./awsconfiguration.sh DEV
+            source awsenvconf 
+            ./buildenv.sh -e DEV -b submission-scoring-processor_deployvar
+            source buildenvvar
+            ./master_deploy.sh -d ECS -e DEV -t latest -s submission-scoring-processor_appvar -i submission-scoring-processor
+  
     
   "build-prod":
     docker:
@@ -55,19 +63,28 @@ jobs:
       - deploy:
           name: Running Masterscript.
           command: |
-            git clone --branch master https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
+            git clone --branch devsts https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
             cp ./../buildscript/master_deploy.sh .
-          #  ./master_deploy.sh -d ECS -e PROD -t $CIRCLE_BUILD_NUM -s submission-scoring-processor-prod 
+            cp ./../buildscript/buildenv.sh .
+            cp ./../buildscript/awsconfiguration.sh .
+            ./awsconfiguration.sh DEV
+            source awsenvconf            
+            ./buildenv.sh -e DEV -b submission-scoring-processor_deployvar
+            source buildenvvar
+            ./master_deploy.sh -d ECS -e DEV -t latest -s submission-scoring-processor_appvar -i submission-scoring-processor
+
 workflows:
   version: 2
   build:
     jobs:
       # Development builds are executed on "develop" branch only.
       - "build-dev":
+          context : org-global
           filters:
             branches:
               only: [ "develop", "dev-circleci" ]
       - "build-prod":
+          context : org-global
           filters:
             branches:
-              only: master1
+              only: master
