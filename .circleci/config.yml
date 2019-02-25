@@ -23,6 +23,7 @@ jobs:
         #  command: |
         #    chmod +x build.sh
         #    ./build.sh DEV
+             pwd
       - deploy:
           name: Running Masterscript.
           command: |
