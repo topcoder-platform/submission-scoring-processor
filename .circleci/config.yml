@@ -1,5 +1,4 @@
 version: 2
-
 jobs:
   ## Build & Deploy against development backend
   "build-dev":
