@@ -101,6 +101,40 @@ docker-compose up
 
 5. When you are running the application for the first time, It will take some time initially to download the image and install the dependencies
 
+## Unit and E2E tests
+
+Variables related to tests is present in `config/test.js`
+
+1. AUTH0_URL - Can leave the dummy value in config/test.js as it is, As no real API requests are triggered during tests
+2. TEST_KAFKA_URL - Kafka URL to be used for tests, this could be different from the Kafka instance used for development
+
+#### Running unit tests and coverage
+
+To run unit tests alone
+
+```
+npm run test
+```
+
+To run unit tests with coverage report
+
+```
+npm run cov
+```
+
+#### Running E2E tests and coverage
+
+To run e2e tests alone
+
+```
+npm run e2e
+```
+
+To run e2e tests with coverage report
+
+```
+npm run cov-e2e
+```
 
 ## Verification
 
