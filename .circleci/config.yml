@@ -21,20 +21,24 @@ jobs:
       - run:
           name: Executing build.
           command: |
-             chmod +x build.sh
-        #    ./build.sh DEV
-           
-      - deploy:
-          name: Running Masterscript.
-          command: |
             git clone --branch devsts https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
             cp ./../buildscript/master_deploy.sh .
             cp ./../buildscript/buildenv.sh .
             cp ./../buildscript/awsconfiguration.sh .
             ./awsconfiguration.sh DEV
-            source awsenvconf      
-            chmod +x build.sh
+            source awsenvconf 
+             chmod +x build.sh
             ./build.sh DEV
+           
+      - deploy:
+          name: Running Masterscript.
+          command: |
+          #  git clone --branch devsts https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
+          #  cp ./../buildscript/master_deploy.sh .
+          #  cp ./../buildscript/buildenv.sh .
+          #  cp ./../buildscript/awsconfiguration.sh .
+          #  ./awsconfiguration.sh DEV
+          #  source awsenvconf      
             ./buildenv.sh -e DEV -b submission-scoring-processor_deployvar
             source buildenvvar
             ./master_deploy.sh -d ECS -e DEV -t $CIRCLE_SHA1 -s submission-scoring-processor_appvar
