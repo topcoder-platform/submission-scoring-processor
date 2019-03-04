@@ -67,11 +67,11 @@ jobs:
             cp ./../buildscript/master_deploy.sh .
             cp ./../buildscript/buildenv.sh .
             cp ./../buildscript/awsconfiguration.sh .
-            ./awsconfiguration.sh DEV
+            ./awsconfiguration.sh PROD
             source awsenvconf            
-            ./buildenv.sh -e DEV -b submission-scoring-processor_deployvar
+            ./buildenv.sh -e PROD -b submission-scoring-processor_deployvar
             source buildenvvar
-            ./master_deploy.sh -d ECS -e DEV -t latest -s submission-scoring-processor_appvar -i submission-scoring-processor
+            ./master_deploy.sh -d ECS -e PROD -t latest -s submission-scoring-processor_appvar -i submission-scoring-processor
 
 workflows:
   version: 2
