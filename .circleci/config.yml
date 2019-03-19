@@ -39,9 +39,9 @@ jobs:
           command: |
             ./awsconfiguration.sh DEV
             source awsenvconf 
-            ./buildenv.sh -e DEV -b submission-scoring-processor_deployvar
+            ./buildenv.sh -e DEV -b dev-submission-scoring-processor-deployvar
             source buildenvvar
-            ./master_deploy.sh -d ECS -e DEV -t latest -s dev-global-appvar,submission-scoring-processor_appvar -i submission-scoring-processor
+            ./master_deploy.sh -d ECS -e DEV -t latest -s dev-global-appvar,dev-submission-scoring-processor-appvar -i submission-scoring-processor
   
   "build-prod":
     docker:
@@ -62,9 +62,9 @@ jobs:
           command: |
             ./awsconfiguration.sh PROD
             source awsenvconf            
-            ./buildenv.sh -e PROD -b submission-scoring-processor_deployvar
+            ./buildenv.sh -e PROD -b prod-submission-scoring-processor-deployvar
             source buildenvvar
-            ./master_deploy.sh -d ECS -e PROD -t latest -s prod-global-appvar,submission-scoring-processor_appvar -i submission-scoring-processor
+            ./master_deploy.sh -d ECS -e PROD -t latest -s prod-global-appvar,prod-submission-scoring-processor_appvar -i submission-scoring-processor
 
 workflows:
   version: 2
