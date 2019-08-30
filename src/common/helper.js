@@ -7,7 +7,7 @@ const _ = require('lodash')
 const logger = require('./logger')
 const request = require('superagent')
 const m2mAuth = require('tc-core-library-js').auth.m2m
-const m2m = m2mAuth(_.pick(config, ['AUTH0_URL', 'AUTH0_AUDIENCE', 'TOKEN_CACHE_TIME']))
+const m2m = m2mAuth(_.pick(config, ['AUTH0_URL', 'AUTH0_AUDIENCE', 'TOKEN_CACHE_TIME', 'AUTH0_PROXY_SERVER_URL']))
 
 // Variable to cache reviewTypes from Submission API
 const reviewTypes = {}

@@ -1,6 +1,6 @@
-# Topcoder - Submission Scoring Processor
+# Topcoder - Submission Scoring Processor 
 
-## Dependencies
+### Dependencies
 
 - nodejs https://nodejs.org/en/ (v8+)
 - Kafka
