@@ -52,7 +52,11 @@ const dataHandler = (messageSet, topic, partition) => Promise.each(messageSet, (
   }
   // Process only Appeals Response END state
   if (messageJSON.topic === config.AUTOPILOT_EVENT_TOPIC &&
-    (messageJSON.payload.phaseTypeName !== 'Appeals Response' ||
+    (
+      (
+        messageJSON.payload.phaseTypeName !== 'Appeals Response' &&
+        messageJSON.payload.phaseTypeName !== 'Approval'
+      ) ||
     messageJSON.payload.state !== 'END')) {
     logger.debug(`Ignoring other auto pilot events from Topic: ${messageJSON.topic}`)
     // Ignore the message

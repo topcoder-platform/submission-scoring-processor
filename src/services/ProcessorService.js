@@ -9,7 +9,7 @@ const helper = require('../common/helper')
 const config = require('config')
 
 // Following Review types will be ignored while aggregating score
-const REVIEW_TYPES_TO_IGNORE = ['Screening', 'AV Scan']
+const REVIEW_TYPES_TO_IGNORE = ['Screening', 'AV Scan', 'Virus Scan', 'SonarQube Scan']
 // TODO: Passing score should be dynamic according to the scorecard
 const PASSING_SCORE = 80 // Hardcoded Passing score for the submission
 
